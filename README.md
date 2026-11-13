@@ -1,5 +1,7 @@
 # EMESSA Business Manager
 
+![Under development](docs/under-development.gif)
+
 **Work in progress.** This is an unfinished project. The inventory screens are the furthest along, and the batch investment and import-cost workspace is still in development.
 
 EMESSA is a web app for managing products, stock, and sales. The plan is to have one workspace for day-to-day warehouse and sales work and another for tracking what each import batch costs. The app runs in your browser and uses Google Sheets to store business records when connected.

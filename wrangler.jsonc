@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "emessa-business-manager",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true },
+  "keep_vars": true,
+  "vars": { "APP_ENV": "production", "LOCAL_DEMO": "false", "SESSION_VERSION": "1" },
+  "observability": { "enabled": false }
+}

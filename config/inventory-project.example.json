@@ -1,0 +1,9 @@
+{
+  "owner_email": "",
+  "standard_cloud_project_id": "",
+  "staging_spreadsheet_id": "",
+  "script_project_id": "",
+  "api_deployment_id": "",
+  "mode": "staging",
+  "write_enabled": false
+}

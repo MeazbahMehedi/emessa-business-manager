@@ -1,0 +1,288 @@
+{
+  "version": "0.1.0-phase1",
+  "status": "Design contract only; no API is implemented or deployed.",
+  "authentication": {
+    "role": "single_admin",
+    "identity": "server-verified Google subject plus configured verified email",
+    "session": "Secure HttpOnly SameSite cookie",
+    "mutation_protection": [
+      "CSRF token",
+      "same-origin validation",
+      "explicit action allowlist"
+    ]
+  },
+  "mutation_envelope": {
+    "required": [
+      "requestId",
+      "action",
+      "expectedRevision",
+      "data"
+    ],
+    "requestId": "UUID persisted across retries",
+    "expectedRevision": "integer for existing record; null for create",
+    "data": "validated according to action",
+    "idempotency": "same request ID and fingerprint returns original result; different payload rejects"
+  },
+  "identity_rules": {
+    "productId": "immutable internal ID; display SKU distinct",
+    "invoiceId": "immutable ID; invoiceNumber unique display identifier",
+    "lineId": "immutable ID; required for reversal",
+    "shippingGroupId": "immutable ID for merged-group mapping",
+    "assetId": "opaque ID linked to app-owned Drive file",
+    "rowNumber": "never trusted from browser"
+  },
+  "fields": {
+    "product": {
+      "sku": "required nonempty text, canonical matching policy",
+      "name": "required text",
+      "category": "optional text",
+      "openingStock": "nonnegative integer; existing adjustments use a separate action",
+      "buyingPrice": "decimal string with currency CNY",
+      "desiredProfit": "decimal string with currency BDT",
+      "imageAssetIds": "array of approved asset IDs",
+      "currentStock": "read-only derived",
+      "calculatedPrice": "read-only reviewed formula"
+    },
+    "invoice": {
+      "invoiceId": "internal stable ID",
+      "invoiceNumber": "unique permitted display identifier",
+      "date": "ISO business date",
+      "customer": {
+        "name": "text",
+        "phone": "11 digit characters starting 01",
+        "address": "text"
+      },
+      "items": "nonempty array of {productId, quantity}; aggregate stock checks",
+      "paymentMethod": "configured enum",
+      "deliveryFee": "nonnegative decimal amount, BDT",
+      "postedAmounts": "server snapshots only"
+    },
+    "return": {
+      "invoiceId": "required",
+      "lines": "nonempty [{lineId, quantity, restockable}]",
+      "reason": "required text",
+      "refund": "explicit money event distinct from original invoice total",
+      "returnDeliveryFee": "nonnegative BDT amount",
+      "operationAndLineKeys": "derive one event key per request and original line"
+    },
+    "receipt": {
+      "receiptId": "immutable",
+      "date": "ISO date",
+      "bankReference": "text with duplicate-review rule",
+      "amount": "positive BDT decimal",
+      "allocations": "[{receivableId, amount}]",
+      "limit": "allocation sum cannot exceed remaining receipt or relevant receivable"
+    },
+    "shippingGroup": {
+      "groupId": "required immutable ID",
+      "members": "array of batch/product-entry IDs",
+      "weightKg": "nonnegative decimal",
+      "cbm": "nonnegative decimal",
+      "carton": "text",
+      "method": "Per Unit or Per KG; Per CBM gated on policy",
+      "rate": "nonnegative BDT decimal",
+      "sourceMergedRange": "backend metadata, not client supplied",
+      "total": "derived once per group"
+    },
+    "batch": {
+      "batchId": "stable ID",
+      "investmentBDT": "nonnegative BDT amount",
+      "conversionBDT": "nonnegative BDT amount",
+      "actualRmbReceived": "nonnegative CNY amount; historical snapshot policy pending",
+      "rate": "explicit BDT per CNY",
+      "sourceOwner": "one canonical workbook, fixed configuration"
+    },
+    "expense": {
+      "expenseId": "stable ID",
+      "date": "ISO date",
+      "batchId": "required reference",
+      "category": "configured enum",
+      "amount": "nonnegative decimal with currency",
+      "attachmentAssetIds": "private assets",
+      "allocationPolicy": "pricing-only versus period expense defined explicitly"
+    }
+  },
+  "operations": [
+    {
+      "action": "product.list",
+      "phase": 3,
+      "kind": "read"
+    },
+    {
+      "action": "product.detail",
+      "phase": 3,
+      "kind": "read"
+    },
+    {
+      "action": "product.upsert",
+      "phase": 3,
+      "kind": "mutation"
+    },
+    {
+      "action": "stock.adjust",
+      "phase": 3,
+      "kind": "mutation"
+    },
+    {
+      "action": "product.archive",
+      "phase": 3,
+      "kind": "mutation"
+    },
+    {
+      "action": "media.upload",
+      "phase": 3,
+      "kind": "separate-file-job"
+    },
+    {
+      "action": "customer.lookup",
+      "phase": 4,
+      "kind": "read"
+    },
+    {
+      "action": "invoice.preview",
+      "phase": 4,
+      "kind": "read"
+    },
+    {
+      "action": "invoice.save",
+      "phase": 4,
+      "kind": "mutation"
+    },
+    {
+      "action": "invoice.pdf",
+      "phase": 4,
+      "kind": "separate-document-job"
+    },
+    {
+      "action": "invoice.email",
+      "phase": 4,
+      "kind": "explicit-job"
+    },
+    {
+      "action": "tracking.search",
+      "phase": 5,
+      "kind": "read"
+    },
+    {
+      "action": "tracking.update",
+      "phase": 5,
+      "kind": "mutation"
+    },
+    {
+      "action": "return.process",
+      "phase": 5,
+      "kind": "mutation"
+    },
+    {
+      "action": "invoice.cancel",
+      "phase": 5,
+      "kind": "mutation"
+    },
+    {
+      "action": "invoice.void",
+      "phase": 5,
+      "kind": "mutation"
+    },
+    {
+      "action": "sales.archive",
+      "phase": 5,
+      "kind": "maintenance-mutation"
+    },
+    {
+      "action": "receipt.record",
+      "phase": 6,
+      "kind": "mutation"
+    },
+    {
+      "action": "settlement.preview",
+      "phase": 6,
+      "kind": "read"
+    },
+    {
+      "action": "settlement.confirm",
+      "phase": 6,
+      "kind": "mutation"
+    },
+    {
+      "action": "settlement.reverse",
+      "phase": 6,
+      "kind": "mutation"
+    },
+    {
+      "action": "batch.read",
+      "phase": 7,
+      "kind": "read"
+    },
+    {
+      "action": "batch.update",
+      "phase": 7,
+      "kind": "mutation"
+    },
+    {
+      "action": "currency.convert",
+      "phase": 7,
+      "kind": "mutation"
+    },
+    {
+      "action": "purchase.record",
+      "phase": 7,
+      "kind": "mutation"
+    },
+    {
+      "action": "shippingGroup.update",
+      "phase": 7,
+      "kind": "mutation"
+    },
+    {
+      "action": "expense.record",
+      "phase": 7,
+      "kind": "mutation"
+    },
+    {
+      "action": "report.read",
+      "phase": 7,
+      "kind": "read"
+    },
+    {
+      "action": "backup.status",
+      "phase": 8,
+      "kind": "read"
+    },
+    {
+      "action": "backup.create",
+      "phase": 8,
+      "kind": "job"
+    },
+    {
+      "action": "maintenance.preview",
+      "phase": 8,
+      "kind": "read"
+    },
+    {
+      "action": "maintenance.apply",
+      "phase": 8,
+      "kind": "maintenance-mutation"
+    }
+  ],
+  "errors": [
+    "UNAUTHENTICATED",
+    "FORBIDDEN",
+    "INVALID_INPUT",
+    "SCHEMA_MISMATCH",
+    "STALE_REVISION",
+    "OUT_OF_STOCK",
+    "DUPLICATE_REFERENCE",
+    "REQUEST_KEY_CONFLICT",
+    "GOOGLE_REAUTH_REQUIRED",
+    "QUOTA_EXCEEDED",
+    "OPERATION_PENDING"
+  ],
+  "future_write_gates": [
+    "source domain ownership",
+    "courier fee basis",
+    "rounding/tolerance",
+    "historical-price evidence",
+    "refund allocations",
+    "shipping-group ownership"
+  ]
+}

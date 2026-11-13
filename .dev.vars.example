@@ -1,0 +1,19 @@
+# Copy to .dev.vars for a local, synthetic read-only preview.
+# Production defaults in wrangler.jsonc disable the preview account.
+APP_ENV=local
+LOCAL_DEMO=true
+# For localhost the origin is inferred. For a managed preview, set its EXACT URL origin:
+# APP_ORIGIN=https://your-trusted-preview-host
+# LOCAL_DEMO_ORIGIN=https://your-trusted-preview-host
+# Generate a real random secret before configuring Google sign-in.
+# SESSION_SECRET=
+# ADMIN_EMAIL=
+# ADMIN_GOOGLE_SUB=
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+# GOOGLE_REFRESH_TOKEN=
+# GOOGLE_SCRIPT_DEPLOYMENT_ID=
+
+# Phase 3 separate owner-only inventory service. Leave unset until staging is configured.
+# GOOGLE_INVENTORY_DEPLOYMENT_ID=
+# GOOGLE_INVENTORY_REFRESH_TOKEN=

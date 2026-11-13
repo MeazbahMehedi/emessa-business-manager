@@ -1,0 +1,165 @@
+{
+  "status": "Source-derived expected examples; these are specifications, not live Google execution results.",
+  "examples": [
+    {
+      "id": "one-product",
+      "input": {
+        "opening": 10,
+        "sold": 2,
+        "unitSell": 150,
+        "unitCost": 100,
+        "feePercent": 0
+      },
+      "expected": {
+        "stock": 8,
+        "revenue": 300,
+        "cost": 200,
+        "profit": 100
+      }
+    },
+    {
+      "id": "multi-product",
+      "input": {
+        "lines": [
+          {
+            "sku": "SYNTH-A",
+            "qty": 2,
+            "sell": 150,
+            "cost": 100
+          },
+          {
+            "sku": "SYNTH-B",
+            "qty": 1,
+            "sell": 80,
+            "cost": 50
+          }
+        ],
+        "feePercent": 0
+      },
+      "expected": {
+        "revenue": 380,
+        "cost": 250,
+        "profit": 130
+      }
+    },
+    {
+      "id": "partial-return",
+      "input": {
+        "sold": 3,
+        "returnQty": 1,
+        "originalLineProfit": 150
+      },
+      "expected": {
+        "activeQty": 2,
+        "stockRestored": 1,
+        "activeProfit": 100
+      }
+    },
+    {
+      "id": "full-return",
+      "input": {
+        "sold": 3,
+        "returnQty": 3,
+        "originalLineProfit": 150
+      },
+      "expected": {
+        "activeQty": 0,
+        "stockRestored": 3,
+        "activeProfit": 0
+      }
+    },
+    {
+      "id": "cancel",
+      "input": {
+        "sold": 3,
+        "cancelQty": 1
+      },
+      "expected": {
+        "activeQty": 2,
+        "stockRestored": 1
+      }
+    },
+    {
+      "id": "void",
+      "input": {
+        "sold": 3,
+        "voidQty": 1
+      },
+      "expected": {
+        "activeQty": 2,
+        "stockRestored": 1
+      }
+    },
+    {
+      "id": "archive",
+      "input": {
+        "opening": 10,
+        "srActiveBefore": 2,
+        "archiveActiveBefore": 0,
+        "srActiveAfter": 0,
+        "archiveActiveAfter": 2
+      },
+      "expected": {
+        "stockBefore": 8,
+        "stockAfter": 8
+      }
+    },
+    {
+      "id": "currency",
+      "input": {
+        "initialBdt": 10000,
+        "convertedBdt": 6600,
+        "rate": 16.5,
+        "purchaseRmb": 100,
+        "shippingBdt": 500
+      },
+      "expected": {
+        "receivedRmb": 400,
+        "balanceRmb": 300,
+        "balanceBdt": 2900
+      }
+    },
+    {
+      "id": "shipping-group",
+      "input": {
+        "quantities": [
+          2,
+          3,
+          1
+        ],
+        "perUnitRate": 10
+      },
+      "expected": {
+        "groupShipping": 60
+      }
+    },
+    {
+      "id": "legacy-fee-conflict",
+      "input": {
+        "allInCost": 100,
+        "desiredProfit": 50,
+        "feePercent": 2
+      },
+      "expected": {
+        "piSell": 153,
+        "piFee": 3,
+        "piProfit": 50,
+        "sourceFrozenSrFee": 3.06,
+        "sourceFrozenSrProfit": 49.94
+      },
+      "status": "Conflict requiring policy decision before website writes"
+    },
+    {
+      "id": "net-settlement",
+      "input": {
+        "invoiceGross": 1000,
+        "courierFee": 20,
+        "actualBankCredit": 980
+      },
+      "expected": {
+        "courierOutstanding": 0
+      },
+      "status": "Target website behavior; source helper comparison against gross is a known mismatch"
+    }
+  ]
+}
